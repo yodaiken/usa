@@ -41,6 +41,10 @@ def get_vote_extras(b, bbp):
 		print "no such file:", p, "from", b["_srcfile"] 
 		return
 	sponsor = rec["sponsor"]
+	if sponsor is None:
+		print "warning: null sponsor in", p
+		del b["votes"]["_"]
+		return b
 	spnsr = {
 			"state": sponsor["state"],
 			"district": sponsor["district"],
@@ -58,12 +62,15 @@ def get_vote_extras(b, bbp):
 	elif search_votes(spnsr, v[3]):
 		spnsr["vote"] = "not present"
 	else:
+		spnsr["vote"] = None
 		print "warning: couldn't find sponsor in voting record from", b["_srcfile"]
 	del b["votes"]["_"]
 	return b
 
 def search_votes(s, vs):
 	for v in vs:
+		if v == "VP":
+			continue
 		if v["state"] == s["state"]:
 			dn = v["display_name"]
 			n = s["name"]
@@ -89,8 +96,16 @@ def parse_vote(p):
 	elif rresult == 'Failed' or rresult == 'Bill Defeated':
 		passed = False
 	else:
-		return None # not really a bill
+		print "warning: invalid value for passage:", passed
+		passed = None
 
+	if not "bill" in rec:
+		if "treaty" in rec:
+			# treaty not bill
+			return None
+		print "warning: record claims to be bill but does not have bill object"
+		print "         from:", p
+		return None
 
 	bill = {
 			"passed": passed,
@@ -126,6 +141,10 @@ def parse_vote(p):
 	def make_count(seg):
 		c = {}
 		for v in seg:
+			if v == "VP":
+				# TODO how do we do this
+				print "warning: ignoring VP vote"
+				continue
 			p = v["party"]
 			if p in c:
 				c[p] += 1
