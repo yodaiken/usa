@@ -10,7 +10,7 @@ def flatten(l):
 
 def main():
 	parser = argparse.ArgumentParser(
-		description='calculate partisanship of a congress on a scale of 0 (bipartisan) to 1 (partisan)')
+		description='generate a cohesive vote record')
 	parser.add_argument('congress', type=str,
 			help='directory that contains congressional vote record and bills')
 	parser.add_argument('output', type=str,
